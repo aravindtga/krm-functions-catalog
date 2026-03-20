@@ -1,19 +1,9 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-    - 'documentation/**' 
   pull_request:
     branches:
       - main
-      - "*/v[0-9]+.[0-9]+"
-    paths-ignore:
-    - 'documentation/**' 
-  schedule:
-    - cron: "0 17 * * *"
 
 concurrency:
   # If a job with a concurrency group is running with cancel-in-progress, that job is cancelled when a new job with same concurrency group is started.
@@ -80,7 +70,7 @@ jobs:
       - run: kustomize version
       - name: Build docker images
         run: |
-          make build
+          make build -j4
       - name: Run all tests
         run: |
           make e2e-test
