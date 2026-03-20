@@ -43,8 +43,8 @@ tidy:
 	@for f in $(GO_MOD_DIRS); do (cd $$f; echo "Tidying $$f"; go mod tidy) || exit 1; done
 
 build: ## Build all function images.
-	cd functions/go && $(MAKE) build
-	cd contrib/functions/go && $(MAKE) build
+	cd functions/go && $(MAKE) -j4 build
+	cd contrib/functions/go &&  $(MAKE) -j4 build
 
 push-curated: ## Push images to registry. WARN: This operation should only be done in CI environment.
 	cd functions/go && $(MAKE) push
