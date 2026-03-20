@@ -56,7 +56,7 @@ $(FUNCTION_TESTS):
 generate: install-mdtogo generate-docs
 
 .PHONY: generate-docs
-generate-docs: $(FUNCTION_GENERATE_DOCS) ## Generate docs for all functions
+generate-docs: install-mdtogo $(FUNCTION_GENERATE_DOCS) ## Generate docs for all functions
 
 .PHONY: $(FUNCTION_GENERATE_DOCS)
 $(FUNCTION_GENERATE_DOCS):
@@ -66,7 +66,7 @@ $(FUNCTION_GENERATE_DOCS):
 build: generate $(FUNCTION_BUILDS) ## Build all function images. 'TAG' env is used to specify tag. 'dev' will be used if not set.
 
 .PHONY: $(FUNCTION_BUILDS)
-$(FUNCTION_BUILDS):
+$(FUNCTION_BUILDS): | generate
 	$(MAKE) CURRENT_FUNCTION=$(subst -BUILD,,$@) TAG=$(TAG) DEFAULT_CR=$(DEFAULT_CONTRIB_CR) func-build
 
 .PHONY: push
@@ -91,9 +91,11 @@ func-fmt:
 	cd $(CURRENT_FUNCTION) && go fmt ./...
 
 func-lint:
+ifndef SKIP_LINT
 	(which $(GOPATH)/bin/golangci-lint || \
-		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/v2.8.0/install.sh | sh -s -- -b $(GOPATH)/bin v2.8.0)
+			curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/v2.8.0/install.sh | sh -s -- -b $(GOPATH)/bin v2.8.0)
 	cd $(CURRENT_FUNCTION) && time $(GOPATH)/bin/golangci-lint run --timeout=10m ./...
+endif
 
 func-test:
 	cd $(CURRENT_FUNCTION) && go test -cover ./...
