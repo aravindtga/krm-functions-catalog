@@ -9,6 +9,14 @@ All submissions, including submissions by project members, require review. We
 use GitHub pull requests for this purpose. Consult [GitHub Help] for more
 information on using pull requests.
 
+Process for code reviews. Before requesting human review, a PR must:
+
+* All tests passing
+* All linting passing
+* Meeting project code quality requirements, including passing all configured static analysis / SonarCloud quality gates and not reducing automated test coverage for the affected components
+* The comments from the first run of automatically generated comments (AI generated comments, SonarCloud comments, bot generated comments, etc.) of the PR are addressed (addressing further re-runs of AI are optional)
+* If it is not possible to resolve an automatic comment, please add a sub-comment indicating why the automated comment cannot be resolved or ask for help in resolving the comment
+
 ## Style Guides
 
 Contributions are required to follow these style guides:
@@ -139,31 +147,6 @@ examples and e2e tests, run the following command
 $ make e2e-test
 ```
 
-#### Doc Verifier
-
-We have a script to ensure the usage docs and the examples are consistent.
-Please ensure it's passing by running:
-
-```shell
-$ ./scripts/verify-docs.py
-```
-
-This script requires Python 3, `pyyaml` and `mdrip` which is a CLI tool.
-
-To install `pyyaml`, run the following command:
-
-```shell
-pip install pyyaml
-```
-
-To install `mdrip`, run the following commands:
-
-```shell
-$ go install github.com/monopole/mdrip@v1.0.2
-```
-
-And you need to ensure `$GOPATH/bin` is in your `PATH`.
-
 ### Change Existing Functions
 
 You must follow the layout convention when you make changes to existing
@@ -201,8 +184,6 @@ Do you need a review or release of functions? We’d love to hear from you!
 [example-template]: https://raw.githubusercontent.com/kptdev/krm-functions-catalog/master/examples/_template/README.md
 
 [Slack channel]: https://kubernetes.slack.com/channels/kpt/
-
-[email list]: https://groups.google.com/forum/?oldui=1#!forum/kpt-users
 
 [error message style guide]: https://github.com/kptdev/kpt/blob/main/docs/style-guides/errors.md
 
