@@ -1,0 +1,24 @@
+diff --git a/Kptfile b/Kptfile
+index d43e47a..72d55f1 100644
+--- a/Kptfile
++++ b/Kptfile
+@@ -6,7 +6,18 @@ pipeline:
+   mutators:
+     - image: ghcr.io/kptdev/krm-functions-catalog/apply-setters:latest
+       configMap:
+-        name: my-new-map
+         env: |
+           - prod
+           - stage
++        name: my-new-map
++status:
++  conditions:
++    - type: Rendered
++      status: "True"
++      reason: RenderSuccess
++  renderStatus:
++    mutationSteps:
++      - image: ghcr.io/kptdev/krm-functions-catalog/apply-setters:latest
++        exitCode: 0
++        results:
++          - message: no matches for input setter(s)
