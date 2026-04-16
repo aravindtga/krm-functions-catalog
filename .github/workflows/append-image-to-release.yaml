@@ -1,0 +1,71 @@
+# Copyright 2026 OpenInfra Foundation Europe.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Append image reference to release notes
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  append-image-ref:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Extract image reference from tag
+        id: image
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          VERSION="${TAG##*/}"
+
+          PATH_WITHOUT_PREFIX="${TAG#functions/}"
+          PATH_WITHOUT_PREFIX="${PATH_WITHOUT_PREFIX#contrib/functions/}"
+          IMAGE_NAME="${PATH_WITHOUT_PREFIX#go/}"
+          IMAGE_NAME="${IMAGE_NAME%/*}"
+
+          if [[ "$TAG" == contrib/* ]]; then
+            IMAGE_REF="ghcr.io/${{ github.repository }}/krm-fn-contrib/${IMAGE_NAME}:${VERSION}"
+          else
+            IMAGE_REF="ghcr.io/${{ github.repository }}/${IMAGE_NAME}:${VERSION}"
+          fi
+
+          echo "image_ref=$IMAGE_REF" >> $GITHUB_OUTPUT
+
+      - name: Skip if image reference already in notes
+        id: check
+        run: |
+          BODY="${{ github.event.release.body }}"
+          if echo "$BODY" | grep -qF "${{ steps.image.outputs.image_ref }}"; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Append image reference to release notes
+        if: steps.check.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CURRENT_BODY="${{ github.event.release.body }}"
+          IMAGE_REF="${{ steps.image.outputs.image_ref }}"
+
+          gh release edit "${{ github.event.release.tag_name }}" \
+            --repo "${{ github.repository }}" \
+            --notes "${CURRENT_BODY}
+
+          ## Container Image
+          \`\`\`
+          ${IMAGE_REF}
+          \`\`\`"
