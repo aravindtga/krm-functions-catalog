@@ -37,6 +37,18 @@ jobs:
           find . -name "*.sh" > shell_files.out
           shellcheck $(cat shell_files.out)
 
+  validate-metadata:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: documentation/go.mod
+          cache: true
+      - name: Validate metadata.yaml files
+        run: make validate-metadata
+
   go-unit-test-ci:
     runs-on: ubuntu-latest
     env:

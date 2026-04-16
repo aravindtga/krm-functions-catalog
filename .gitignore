@@ -29,6 +29,12 @@ public/
 # We use sed -i.bak when doing in-line replace, because it works better cross-platform
 *.bak
 
-scripts/patch_reader/patch_reader
 shell_files.out
+scripts/generate_docs/validate_metadata
+scripts/generate_docs/generate_docs
+*.out
 !jsonschema-k8s.tar.gz
+
+
+# Local notes
+.local/
