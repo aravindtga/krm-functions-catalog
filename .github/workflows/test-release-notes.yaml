@@ -42,27 +42,23 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="${GITHUB_REF#refs/tags/}"
-          IMAGE_REF="${{ steps.meta.outputs.image_ref }}"
-
-          if ! gh release view "$TAG" --repo "${{ github.repository }}" > /dev/null 2>&1; then
+           TAG="${GITHUB_REF#refs/tags/}"
+           IMAGE_REF="${{ steps.meta.outputs.image_ref }}"
+           
+           if ! gh release view "$TAG" --repo "${{ github.repository }}" > /dev/null 2>&1; then
             echo "No release found for tag $TAG, skipping."
             exit 0
-          fi
-
-          CURRENT_BODY=$(gh release view "$TAG" --repo "${{ github.repository }}" --json body -q .body)
-
-          if [[ "$CURRENT_BODY" == *"$IMAGE_REF"* ]]; then
+           fi
+           
+           CURRENT_BODY=$(gh release view "$TAG" --repo "${{ github.repository }}" --json body -q .body)
+           
+           if [[ "$CURRENT_BODY" == *"$IMAGE_REF"* ]]; then
             echo "Image reference already present in release notes, skipping."
             exit 0
-          fi
+           fi
+          
+           NEW_BODY="$(printf '%s\n\n## Container Image\n\n```\n%s\n```' "$CURRENT_BODY" "$IMAGE_REF")"
 
-          gh release edit "$TAG" \
+           gh release edit "$TAG" \
             --repo "${{ github.repository }}" \
-            --notes "${CURRENT_BODY}
-
-          ## Container Image
-
-          \`\`\`
-          ${IMAGE_REF}
-          \`\`\`"
+            --notes "$NEW_BODY"
