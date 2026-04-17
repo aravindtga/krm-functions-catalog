@@ -1,0 +1,68 @@
+# Temporary workflow to test metadata reading and release notes update.
+# Remove after verification.
+
+name: Test - Read metadata and update release notes
+
+on:
+  push:
+    tags:
+      - "functions/*/*/v*"
+
+jobs:
+  test-release-notes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract semver and image name
+        id: extract
+        uses: ./.github/actions/extract-tag-info
+
+      - name: Read image reference from metadata
+        id: meta
+        run: |
+          IMAGE_NAME="${{ steps.extract.outputs.image_name }}"
+          VERSION="${{ steps.extract.outputs.version }}"
+          FUNC_DIR="functions/go/${IMAGE_NAME}"
+
+          IMAGE_BASE=$(grep '^image:' "${FUNC_DIR}/metadata.yaml" | awk '{print $2}')
+          if [[ -z "$IMAGE_BASE" ]]; then
+            echo "::error::No image field found in ${FUNC_DIR}/metadata.yaml"
+            exit 1
+          fi
+
+          echo "image_ref=${IMAGE_BASE}:${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Image ref: ${IMAGE_BASE}:${VERSION}"
+
+      - name: Add image reference to release notes
+        if: steps.meta.outputs.image_ref != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          IMAGE_REF="${{ steps.meta.outputs.image_ref }}"
+
+          if ! gh release view "$TAG" --repo "${{ github.repository }}" > /dev/null 2>&1; then
+            echo "No release found for tag $TAG, skipping."
+            exit 0
+          fi
+
+          CURRENT_BODY=$(gh release view "$TAG" --repo "${{ github.repository }}" --json body -q .body)
+
+          if [[ "$CURRENT_BODY" == *"$IMAGE_REF"* ]]; then
+            echo "Image reference already present in release notes, skipping."
+            exit 0
+          fi
+
+          gh release edit "$TAG" \
+            --repo "${{ github.repository }}" \
+            --notes "${CURRENT_BODY}
+
+          ## Container Image
+
+          \`\`\`
+          ${IMAGE_REF}
+          \`\`\`"
