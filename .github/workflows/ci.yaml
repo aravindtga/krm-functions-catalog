@@ -100,7 +100,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set up Go and install kpt
-        uses: kptdev/kpt/.github/actions/setup-go-kpt@main
+        uses: kptdev/kpt/.github/actions/setup-go-kpt@f6b70e2e2a8b232a10502097e07a356d84b03558
         with:
           go-version-file: tests/e2etest/go.mod
           cache-dependency-path: |
