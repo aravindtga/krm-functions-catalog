@@ -80,7 +80,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Set up Go
-        uses: kptdev/kpt/.github/actions/setup-go-kpt@main
+        uses: kptdev/kpt/.github/actions/setup-go-kpt@improve-setup-go-kpt-version-resolution
         with:
           go-version-file: documentation/go.mod
           install-kpt: 'false'
